@@ -22,6 +22,9 @@ def l1_loss(pred, target):
 def mse_loss(pred, target):
     return F.mse_loss(pred, target, reduction='none')
 
+@weighted_loss
+def ce_loss(pred, target):
+    return F.cross_entropy(pred, target, reduction='none')
 
 @weighted_loss
 def charbonnier_loss(pred, target, eps=1e-12):
@@ -383,6 +386,34 @@ class MultiScaleGANLoss(GANLoss):
         else:
             return super().forward(input, target_is_real, is_disc)
 
+
+@LOSS_REGISTRY.register()
+class CrossEntropyLoss(nn.Module):
+    """Cross Entropy loss.
+
+    Args:
+        loss_weight (float): Loss weight for MSE loss. Default: 1.0.
+        reduction (str): Specifies the reduction to apply to the output.
+            Supported choices are 'none' | 'mean' | 'sum'. Default: 'mean'.
+    """
+
+    def __init__(self, loss_weight=1.0, reduction='mean'):
+        super(CrossEntropyLoss, self).__init__()
+        if reduction not in ['none', 'mean', 'sum']:
+            raise ValueError(f'Unsupported reduction mode: {reduction}. ' f'Supported ones are: {_reduction_modes}')
+
+        self.loss_weight = loss_weight
+        self.reduction = reduction
+
+    def forward(self, pred, target, weight=None, **kwargs):
+        """
+        Args:
+            pred (Tensor): of shape (N, C, H, W). Predicted tensor.
+            target (Tensor): of shape (N, C, H, W). Ground truth tensor.
+            weight (Tensor, optional): of shape (N, C, H, W). Element-wise
+                weights. Default: None.
+        """
+        return self.loss_weight * ce_loss(pred, target, weight, reduction=self.reduction)
 
 def r1_penalty(real_pred, real_img):
     """R1 regularization for discriminator. The core idea is to

@@ -21,11 +21,12 @@ from basicsr.utils.img_process_util import filter2D
 from basicsr.utils.registry import MODEL_REGISTRY
 from torch.nn import functional as F
 
-img_path = 'datasets/DIV2K/DIV2K_valid_HR'
-output_path = 'datasets/RealSR_TEST/DIV2K_Real_type3'
+img_path = 'dataset/benchmark/Urban100/HR'
+output_path = 'dataset/RealSR_TEST/Urban100_Real_type1'
 
 os.makedirs(output_path, exist_ok=True)
 os.makedirs(output_path+'_withparams', exist_ok=True)
+os.makedirs(output_path+'_tensors', exist_ok=True)
 
 # img_list = sorted(glob.glob(os.path.join(args.test_path, '*')))
 # for img_path in img_list:
@@ -175,6 +176,7 @@ def degrade_func(img_dir, output_dir):
         degradation_params[road_map[3] + 4:] = onehot_mode.expand(gt.size(0), len(resize_mode_list))
 
         print(degradation_params)
+        torch.save(degradation_params, os.path.join(output_dir+'_tensors', img_name.split('.')[0]+'.pt'))
 
         # clamp and round
         out = torch.clamp((out * 255.0).round(), 0, 255) / 255.

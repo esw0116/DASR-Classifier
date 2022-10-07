@@ -9,7 +9,7 @@ import time
 from basicsr.archs import build_network
 from basicsr.losses import build_loss
 from basicsr.metrics import calculate_metric
-from basicsr.utils import get_root_logger, imwrite, tensor2img
+from basicsr.utils import get_root_logger, imwrite, tensor2img, savetensor
 from basicsr.utils.registry import MODEL_REGISTRY
 from .base_model import BaseModel
 
@@ -205,6 +205,8 @@ class SRGANDynamicModel(BaseModel):
         self.net_p.eval()
         with torch.no_grad():
             predicted_params, weights = self.net_p(self.lq)
+        self.predicted_params = predicted_params
+        self.weights = weights
         self.net_p.train()
 
         if hasattr(self, 'net_g_ema'):
@@ -237,6 +239,8 @@ class SRGANDynamicModel(BaseModel):
             sr_img = tensor2img([visuals['result']])
             if 'gt' in visuals:
                 gt_img = tensor2img([visuals['gt']])
+                h, w = sr_img.shape[:2]
+                gt_img = gt_img[:h, :w]
                 del self.gt
 
             # tentative for out of GPU memory
@@ -251,11 +255,16 @@ class SRGANDynamicModel(BaseModel):
                     if self.opt['val']['suffix']:
                         save_img_path = osp.join(self.opt['path']['visualization'], dataset_name,
                                                  f'{img_name}_{self.opt["val"]["suffix"]}.png')
+                        save_tensor_path = osp.join(self.opt['path']['visualization']+'_degradation', dataset_name,
+                                                 f'{img_name}_{self.opt["val"]["suffix"]}.pt')
                     else:
                         save_img_path = osp.join(self.opt['path']['visualization'], dataset_name,
                                                  f'{img_name}_{self.opt["name"]}.png')
+                        save_tensor_path = osp.join(self.opt['path']['visualization']+'_degradation', dataset_name,
+                                                 f'{img_name}_{self.opt["name"]}.pt')
 
                 imwrite(sr_img, save_img_path)
+                savetensor(self.predicted_params.cpu().squeeze(0), save_tensor_path)
 
 
             if with_metrics:

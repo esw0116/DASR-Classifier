@@ -153,7 +153,8 @@ def train_pipeline(root_path):
         train_sampler.set_epoch(epoch)
         prefetcher.reset()
         train_data = prefetcher.next()
-
+        
+        # l1 = torch.Tensor([0,0,0,0]); l2 = torch.Tensor([0,0,0]); l3=torch.Tensor([0,0])
         while train_data is not None:
             data_time = time.time() - data_time
 
@@ -162,10 +163,12 @@ def train_pipeline(root_path):
                 break
             # update learning rate
             model.update_learning_rate(current_iter, warmup_iter=opt['train'].get('warmup_iter', -1))
+            
             # training
             model.feed_data(train_data)
             model.optimize_parameters(current_iter)
-            iter_time = time.time() - iter_time
+            # l1 += a; l2 += b; l3 += c
+            # iter_time = time.time() - iter_time
             # log
             if current_iter % opt['logger']['print_freq'] == 0:
                 log_vars = {'epoch': epoch, 'iter': current_iter}
@@ -182,6 +185,9 @@ def train_pipeline(root_path):
             # validation
             if opt.get('val') is not None and (current_iter % opt['val']['val_freq'] == 0):
                 model.validation(val_loader, current_iter, tb_logger, opt['val']['save_img'])
+                # print({'Recent Label1': a.numpy(), 'Label2': b.numpy(), 'Label3': c.numpy(),})
+                # print({'Label1': l1.numpy(), 'Label2': l2.numpy(), 'Label3': l3.numpy(),})
+                # l1 = torch.Tensor([0,0,0,0]); l2 = torch.Tensor([0,0,0]); l3=torch.Tensor([0,0])
 
             data_time = time.time()
             iter_time = time.time()

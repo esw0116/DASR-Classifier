@@ -55,8 +55,8 @@ network_p:
 
 # path
 path:
-  pretrain_network_g: experiments/pretrained_models/net_g.pth
-  pretrain_network_p: experiments/pretrained_models/net_p.pth
+  pretrain_network_g: pretrained_models/net_g.pth
+  pretrain_network_p: pretrained_models/net_p.pth
   param_key_g: ~
   strict_load_g: true
 

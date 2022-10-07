@@ -34,3 +34,7 @@ class Degradation_Predictor(nn.Module):
         out_params = flat.view(flat.size()[:2])
         mapped_weights = self.MappingNet(out_params)
         return out_params, mapped_weights
+    
+    def forward_mappingnet(self, degradation_params):
+        mapped_weights = self.MappingNet(degradation_params)
+        return mapped_weights

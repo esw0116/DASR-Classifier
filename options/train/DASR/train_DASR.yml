@@ -180,10 +180,7 @@ train:
     type: L1Loss
     loss_weight: 1.0
     reduction: mean
-  regress_opt:
-    type: L1Loss
-    loss_weight: 1.0
-    reduction: mean
+
   # perceptual loss (content and style losses)
   perceptual_opt:
     type: PerceptualLoss

@@ -407,8 +407,6 @@ class DASRModel(SRGANDynamicModel):
             else:
                 print('Degree Mode Mismatch.')
 
-            # print(self.degradation_params)
-
             self._dequeue_and_enqueue()
         else:
             data = data_all
