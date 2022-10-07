@@ -1,0 +1,82 @@
+name: Test_DASR_GTDeg
+model_type: SRGANGenModel
+scale: 4
+num_gpu: 1
+manual_seed: 0
+num_networks: 5
+
+datasets:
+  # test_1:
+    # name: RealWorld38
+    # type: SingleImageDataset
+    # dataroot_lq: dataset/benchmark/RealWorld38
+    # io_backend:
+    #   type: disk
+  test_2:
+    name: DIV2K_type1_GTDegradation
+    type: PairedImageDegDataset
+    dataroot_lq: dataset/RealSR_TEST/Urban100_Real_type1
+    dataroot_deg: dataset/RealSR_TEST/Urban100_Real_type1_tensors
+    dataroot_gt: dataset/benchmark/Urban100/HR
+    io_backend:
+      type: disk
+  # test_3:
+  #   name: DIV2K_type2
+  #   type: SingleImageDataset
+  #   dataroot_lq: datasets/DIV2K_type2
+  #   io_backend:
+  #     type: disk
+  # test_4:
+  #   name: DIV2K_type3
+  #   type: SingleImageDataset
+  #   dataroot_lq: datasets/DIV2K_type3
+  #   io_backend:
+  #     type: disk
+  # test_10:
+  #   name: DIV2K_bicubic
+  #   type: SingleImageDataset
+  #   dataroot_lq: datasets/DIV2K_bicubic
+  #   io_backend:
+  #     type: disk
+
+network_g:
+  type: MSRResNetDynamic
+  num_in_ch: 3
+  num_out_ch: 3
+  num_feat: 64
+  num_block: 16
+  num_models: 5
+  upscale: 4
+
+network_p:
+  type: Degradation_Predictor
+  in_nc: 3
+  nf: 64
+  num_params: 33
+  num_networks: 5
+
+# path
+path:
+  pretrain_network_g: experiments/train_DASR_GTDeg/models/net_g_200000.pth
+  pretrain_network_p: experiments/train_DASR_GTDeg/models/net_p_200000.pth
+  param_key_g: params
+  strict_load_g: true
+
+# validation settings
+val:
+  save_img: true
+  suffix: ~  # add suffix to saved images, if None, use exp name
+  metrics:
+    psnr_y: # metric name, can be arbitrary
+      type: calculate_psnr
+      crop_border: 0
+      test_y_channel: true
+    ssim_y:
+      type: calculate_ssim
+      crop_border: 0
+      test_y_channel: true
+    niqe:
+      type: calculate_niqe
+      crop_border: 0
+
+#PYTHONPATH="./:${PYTHONPATH}" CUDA_VISIBLE_DEVICES=15 python dasr/test.py -opt options/test/DASR/test_DASR.yml
